@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles del Job - Procesamiento de Documentos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        body {
+            background: #000000;
+            color: #ffffff;
+        }
+        .glass-effect {
+            background: rgba(28, 28, 30, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-black">
+    <!-- Navbar -->
+    <nav class="glass-effect border-b border-white/10 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <a href="/" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="bi bi-arrow-left text-2xl"></i>
+                    </a>
+                    <h1 class="text-xl font-semibold text-white">Detalles del Job</h1>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Información General -->
+        <div class="glass-effect rounded-2xl overflow-hidden mb-6">
+            <div class="p-6 border-b border-white/10">
+                <h2 class="text-2xl font-bold text-white flex items-center space-x-2">
+                    <i class="bi bi-info-circle text-red-400"></i>
+                    <span>Información General</span>
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <span class="text-gray-400 text-sm">Execution ID</span>
+                            <p class="text-white font-mono" th:text="${jobExecution.id}"></p>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 text-sm">Token</span>
+                            <p class="text-white"><code class="text-xs text-red-300 bg-red-500/20 px-2 py-1 rounded" th:text="${token}"></code></p>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 text-sm">Job Name</span>
+                            <p class="text-white" th:text="${jobExecution.jobInstance.jobName}"></p>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 text-sm">Estado</span>
+                            <div class="mt-1">
+                                <span th:switch="${jobExecution.status}" class="px-3 py-1 rounded-full text-xs font-medium">
+                                    <span th:case="'COMPLETED'" class="bg-green-500/20 text-green-400">COMPLETED</span>
+                                    <span th:case="'FAILED'" class="bg-red-500/20 text-red-400">FAILED</span>
+                                    <span th:case="'STARTING'" class="bg-blue-500/20 text-blue-400">STARTING</span>
+                                    <span th:case="'STARTED'" class="bg-yellow-500/20 text-yellow-400">STARTED</span>
+                                    <span th:case="*" class="bg-gray-500/20 text-gray-400" th:text="${jobExecution.status}"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <span class="text-gray-400 text-sm">Inicio</span>
+                            <p class="text-white" th:text="${jobExecution.startTime != null ? #temporals.format(jobExecution.startTime, 'yyyy-MM-dd HH:mm:ss') : 'N/A'}"></p>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 text-sm">Fin</span>
+                            <p class="text-white" th:text="${jobExecution.endTime != null ? #temporals.format(jobExecution.endTime, 'yyyy-MM-dd HH:mm:ss') : 'En curso...'}"></p>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 text-sm">Exit Status</span>
+                            <div class="mt-1">
+                                <span th:switch="${jobExecution.exitStatus.exitCode}" class="px-3 py-1 rounded-full text-xs font-medium">
+                                    <span th:case="'COMPLETED'" class="bg-green-500/20 text-green-400">COMPLETED</span>
+                                    <span th:case="'FAILED'" class="bg-red-500/20 text-red-400">FAILED</span>
+                                    <span th:case="*" class="bg-gray-500/20 text-gray-400" th:text="${jobExecution.exitStatus.exitCode}"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Errores -->
+                <div th:if="${jobExecution.failureExceptions != null && !jobExecution.failureExceptions.isEmpty()}" class="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                    <h6 class="text-red-400 font-semibold mb-2 flex items-center space-x-2">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span>Errores</span>
+                    </h6>
+                    <ul class="list-disc list-inside space-y-1 text-red-300 text-sm">
+                        <li th:each="exception : ${jobExecution.failureExceptions}" th:text="${exception.message}"></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documentos Procesados -->
+        <div class="glass-effect rounded-2xl overflow-hidden mb-6">
+            <div class="p-6 border-b border-white/10">
+                <h2 class="text-2xl font-bold text-white flex items-center space-x-2">
+                    <i class="bi bi-file-earmark-pdf text-red-400"></i>
+                    <span>Documentos Procesados</span>
+                </h2>
+            </div>
+            <div class="p-6">
+                <div th:if="${documentos == null || documentos.isEmpty()}" class="text-center py-12">
+                    <p class="text-gray-400">No hay documentos procesados para este job</p>
+                </div>
+
+                <div th:if="${documentos != null && !documentos.isEmpty()}" class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-white/10">
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-400">Operación</th>
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-400">Archivo</th>
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-400">Estado</th>
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-400">HTTP</th>
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-400">Tamaño</th>
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-400">Fecha</th>
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-400">Error</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="doc : ${documentos}" class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                                <td class="py-4 px-4">
+                                    <span class="text-white font-semibold" th:text="${doc.numeroOperacion}"></span>
+                                </td>
+                                <td class="py-4 px-4 text-gray-300 text-sm" th:text="${doc.nombreArchivo}"></td>
+                                <td class="py-4 px-4">
+                                    <span th:switch="${doc.estado}" class="px-3 py-1 rounded-full text-xs font-medium">
+                                        <span th:case="'PROCESADO'" class="bg-green-500/20 text-green-400">PROCESADO</span>
+                                        <span th:case="'FALLIDO'" class="bg-red-500/20 text-red-400">FALLIDO</span>
+                                        <span th:case="'PENDIENTE'" class="bg-yellow-500/20 text-yellow-400">PENDIENTE</span>
+                                        <span th:case="*" class="bg-gray-500/20 text-gray-400" th:text="${doc.estado}"></span>
+                                    </span>
+                                </td>
+                                <td class="py-4 px-4">
+                                    <span th:if="${doc.estadoHttp != null && doc.estadoHttp == 200}" 
+                                          class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs font-mono" 
+                                          th:text="${doc.estadoHttp}"></span>
+                                    <span th:if="${doc.estadoHttp != null && doc.estadoHttp != 200 && doc.estadoHttp != 0}" 
+                                          class="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs font-mono" 
+                                          th:text="${doc.estadoHttp}"></span>
+                                    <span th:if="${doc.estadoHttp == null || doc.estadoHttp == 0}" 
+                                          class="text-gray-500">-</span>
+                                </td>
+                                <td class="py-4 px-4 text-gray-400 text-xs">
+                                    <span th:text="${doc.tamañoArchivo != null ? (doc.tamañoArchivo + ' bytes') : 'N/A'}"></span>
+                                </td>
+                                <td class="py-4 px-4 text-gray-400 text-xs" 
+                                    th:text="${doc.fechaProcesamiento != null ? #temporals.format(doc.fechaProcesamiento, 'yyyy-MM-dd HH:mm') : 'N/A'}"></td>
+                                <td class="py-4 px-4">
+                                    <span th:if="${doc.mensajeError != null}" 
+                                          class="text-red-400 text-xs" 
+                                          th:text="${doc.mensajeError}"></span>
+                                    <span th:if="${doc.mensajeError == null}" 
+                                          class="text-gray-500">-</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs de Ejecución -->
+        <div class="glass-effect rounded-2xl overflow-hidden mb-6">
+            <div class="p-6 border-b border-white/10">
+                <h2 class="text-2xl font-bold text-white flex items-center space-x-2">
+                    <i class="bi bi-journal-text text-red-400"></i>
+                    <span>Logs de Ejecución</span>
+                </h2>
+            </div>
+            <div class="p-6">
+                <div th:if="${logs == null || logs.isEmpty()}" class="text-center py-12">
+                    <p class="text-gray-400">No hay logs disponibles</p>
+                </div>
+
+                <div th:if="${logs != null && !logs.isEmpty()}" class="overflow-x-auto">
+                    <div class="max-h-96 overflow-y-auto">
+                        <table class="w-full">
+                            <thead class="sticky top-0 bg-black/80 backdrop-blur-sm">
+                                <tr class="border-b border-white/10">
+                                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-400">Fecha/Hora</th>
+                                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-400">Nivel</th>
+                                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-400">Componente</th>
+                                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-400">Mensaje</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="log : ${logs}" class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                                    <td class="py-3 px-4 text-gray-400 text-xs font-mono" 
+                                        th:text="${log.fecha != null ? #temporals.format(log.fecha, 'yyyy-MM-dd HH:mm:ss') : 'N/A'}"></td>
+                                    <td class="py-3 px-4">
+                                        <span th:switch="${log.nivel}" class="px-2 py-1 rounded text-xs font-medium">
+                                            <span th:case="'INFO'" class="bg-blue-500/20 text-blue-400">INFO</span>
+                                            <span th:case="'ERROR'" class="bg-red-500/20 text-red-400">ERROR</span>
+                                            <span th:case="'WARN'" class="bg-yellow-500/20 text-yellow-400">WARN</span>
+                                            <span th:case="*" class="bg-gray-500/20 text-gray-400" th:text="${log.nivel}"></span>
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <code class="text-xs text-red-300 bg-red-500/20 px-2 py-1 rounded" th:text="${log.componente}"></code>
+                                    </td>
+                                    <td class="py-3 px-4 text-gray-300 text-sm" th:text="${log.mensaje}"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detalles de Steps -->
+        <div class="glass-effect rounded-2xl overflow-hidden">
+            <div class="p-6 border-b border-white/10">
+                <h2 class="text-2xl font-bold text-white flex items-center space-x-2">
+                    <i class="bi bi-list-task text-red-400"></i>
+                    <span>Detalles de Steps</span>
+                </h2>
+            </div>
+            <div class="p-6">
+                <div th:if="${stepExecutions == null || stepExecutions.isEmpty()}" class="text-center py-12">
+                    <p class="text-gray-400">No hay steps ejecutados</p>
+                </div>
+
+                <div th:if="${stepExecutions != null && !stepExecutions.isEmpty()}" class="space-y-4">
+                    <div th:each="stepExecution : ${stepExecutions}" class="glass-effect rounded-xl p-6 border border-white/10">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-white flex items-center space-x-2">
+                                <i class="bi bi-gear text-red-400"></i>
+                                <span th:text="${stepExecution.stepName}"></span>
+                            </h3>
+                            <span th:switch="${stepExecution.status}" class="px-3 py-1 rounded-full text-xs font-medium">
+                                <span th:case="'COMPLETED'" class="bg-green-500/20 text-green-400">COMPLETED</span>
+                                <span th:case="'FAILED'" class="bg-red-500/20 text-red-400">FAILED</span>
+                                <span th:case="*" class="bg-gray-500/20 text-gray-400" th:text="${stepExecution.status}"></span>
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Items Leídos:</span>
+                                    <span class="text-white font-mono" th:text="${stepExecution.readCount}"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Items Escritos:</span>
+                                    <span class="text-white font-mono" th:text="${stepExecution.writeCount}"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Items Filtrados:</span>
+                                    <span class="text-white font-mono" th:text="${stepExecution.filterCount}"></span>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Errores Lectura:</span>
+                                    <span class="text-white font-mono" th:text="${stepExecution.readSkipCount}"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Errores Escritura:</span>
+                                    <span class="text-white font-mono" th:text="${stepExecution.writeSkipCount}"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Errores Proceso:</span>
+                                    <span class="text-white font-mono" th:text="${stepExecution.processSkipCount}"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-white/10">
+                            <span class="text-gray-400 text-sm">Commits: </span>
+                            <span class="text-white font-mono" th:text="${stepExecution.commitCount}"></span>
+                        </div>
+                        
+                        <!-- Errores del step -->
+                        <div th:if="${stepExecution.failureExceptions != null && !stepExecution.failureExceptions.isEmpty()}" 
+                             class="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                            <h6 class="text-red-400 font-semibold mb-2 flex items-center space-x-2">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                <span>Errores</span>
+                            </h6>
+                            <ul class="list-disc list-inside space-y-1 text-red-300 text-sm">
+                                <li th:each="exception : ${stepExecution.failureExceptions}" th:text="${exception.message}"></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

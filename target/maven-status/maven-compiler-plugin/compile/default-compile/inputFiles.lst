@@ -1,0 +1,16 @@
+/Users/jsotoimio/Desktop/file/src/main/java/cl/jonatansoto/reader/file/FileApplication.java
+/Users/jsotoimio/Desktop/file/src/main/java/cl/jonatansoto/reader/file/batch/listener/CustomStepExecutionListener.java
+/Users/jsotoimio/Desktop/file/src/main/java/cl/jonatansoto/reader/file/batch/listener/JobTokenListener.java
+/Users/jsotoimio/Desktop/file/src/main/java/cl/jonatansoto/reader/file/batch/processor/OperacionProcessor.java
+/Users/jsotoimio/Desktop/file/src/main/java/cl/jonatansoto/reader/file/batch/reader/PdfItemReader.java
+/Users/jsotoimio/Desktop/file/src/main/java/cl/jonatansoto/reader/file/batch/writer/OperacionWriter.java
+/Users/jsotoimio/Desktop/file/src/main/java/cl/jonatansoto/reader/file/config/BatchConfig.java
+/Users/jsotoimio/Desktop/file/src/main/java/cl/jonatansoto/reader/file/config/RestTemplateConfig.java
+/Users/jsotoimio/Desktop/file/src/main/java/cl/jonatansoto/reader/file/controller/JobController.java
+/Users/jsotoimio/Desktop/file/src/main/java/cl/jonatansoto/reader/file/controller/MockDocumentoController.java
+/Users/jsotoimio/Desktop/file/src/main/java/cl/jonatansoto/reader/file/controller/TokenGeneratorController.java
+/Users/jsotoimio/Desktop/file/src/main/java/cl/jonatansoto/reader/file/model/DocumentoProcesado.java
+/Users/jsotoimio/Desktop/file/src/main/java/cl/jonatansoto/reader/file/model/DocumentoRequest.java
+/Users/jsotoimio/Desktop/file/src/main/java/cl/jonatansoto/reader/file/model/OperacionDocumento.java
+/Users/jsotoimio/Desktop/file/src/main/java/cl/jonatansoto/reader/file/repository/DocumentoProcesadoRepository.java
+/Users/jsotoimio/Desktop/file/src/main/java/cl/jonatansoto/reader/file/service/TokenService.java

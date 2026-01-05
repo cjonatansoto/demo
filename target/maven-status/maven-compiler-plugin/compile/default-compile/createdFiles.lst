@@ -1,0 +1,16 @@
+cl/jonatansoto/reader/file/batch/reader/PdfItemReader.class
+cl/jonatansoto/reader/file/model/DocumentoRequest.class
+cl/jonatansoto/reader/file/FileApplication.class
+cl/jonatansoto/reader/file/batch/listener/JobTokenListener.class
+cl/jonatansoto/reader/file/repository/DocumentoProcesadoRepository.class
+cl/jonatansoto/reader/file/batch/listener/CustomStepExecutionListener.class
+cl/jonatansoto/reader/file/controller/MockDocumentoController.class
+cl/jonatansoto/reader/file/controller/JobController.class
+cl/jonatansoto/reader/file/batch/writer/OperacionWriter.class
+cl/jonatansoto/reader/file/config/RestTemplateConfig.class
+cl/jonatansoto/reader/file/model/OperacionDocumento.class
+cl/jonatansoto/reader/file/config/BatchConfig.class
+cl/jonatansoto/reader/file/model/DocumentoProcesado.class
+cl/jonatansoto/reader/file/controller/TokenGeneratorController.class
+cl/jonatansoto/reader/file/batch/processor/OperacionProcessor.class
+cl/jonatansoto/reader/file/service/TokenService.class

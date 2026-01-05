@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: file
+
+  datasource:
+    url: jdbc:h2:file:./batch-db/batch-db
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+  threads:
+    virtual:
+      enabled: true
+
+logging:
+  level:
+    org.springframework.batch: DEBUG
+    cl.jonatansoto.reader.file.batch: INFO
+    cl.jonatansoto.reader.file.batch.reader: INFO
+    cl.jonatansoto.reader.file.batch.processor: INFO
+    cl.jonatansoto.reader.file.batch.writer: INFO
+
+path:
+  base:
+    operaciones: /Users/jsotoimio/Desktop/file/u01/users/lsg/dat
+
+api:
+  endpoint:
+    url: http://localhost:8080/api/documentos
