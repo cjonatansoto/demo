@@ -1,17 +1,15 @@
 package cl.jonatansoto.reader.file.batch.listener;
 
 import cl.jonatansoto.reader.file.batch.writer.OperacionWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class CustomStepExecutionListener implements StepExecutionListener {
-    
-    private static final Logger logger = LoggerFactory.getLogger(CustomStepExecutionListener.class);
     
     @Override
     public void beforeStep(StepExecution stepExecution) {
@@ -19,7 +17,7 @@ public class CustomStepExecutionListener implements StepExecutionListener {
         String token = jobContext.getString("token");
         Long jobExecutionId = stepExecution.getJobExecution().getId();
         
-        logger.info("=== INICIO STEP: {} - Job Execution ID: {}, Token: {} ===", 
+        log.info("=== INICIO STEP: {} - Job Execution ID: {}, Token: {} ===", 
                 stepExecution.getStepName(), jobExecutionId, token);
         
         // Guardar token y jobExecutionId en ThreadLocal para que el writer pueda acceder
@@ -33,7 +31,7 @@ public class CustomStepExecutionListener implements StepExecutionListener {
     
     @Override
     public org.springframework.batch.core.ExitStatus afterStep(StepExecution stepExecution) {
-        logger.info("=== FIN STEP: {} - Items leídos: {}, Items escritos: {}, Status: {} ===",
+        log.info("=== FIN STEP: {} - Items leídos: {}, Items escritos: {}, Status: {} ===",
                 stepExecution.getStepName(),
                 stepExecution.getReadCount(),
                 stepExecution.getWriteCount(),

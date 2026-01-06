@@ -4,6 +4,8 @@ import cl.jonatansoto.reader.file.batch.listener.CustomStepExecutionListener;
 import cl.jonatansoto.reader.file.batch.listener.JobTokenListener;
 import cl.jonatansoto.reader.file.batch.reader.PdfItemReader;
 import cl.jonatansoto.reader.file.model.OperacionDocumento;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -13,7 +15,6 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.file.MultiResourceItemReader;
 import org.springframework.batch.item.file.builder.MultiResourceItemReaderBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,34 +23,31 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 
+@Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class BatchConfig {
-
-    private static final Logger logger = LoggerFactory.getLogger(BatchConfig.class);
 
     @Value("${path.base.operaciones}")
     private String pathBase;
     
-    @Autowired
-    private JobTokenListener jobTokenListener;
+    private final JobTokenListener jobTokenListener;
     
-    @Autowired
-    private CustomStepExecutionListener stepExecutionListener;
+    private final CustomStepExecutionListener stepExecutionListener;
 
     @Bean
     public MultiResourceItemReader<OperacionDocumento> multiResourceReader() throws IOException {
         String pattern = "file:" + pathBase + "/**/*.pdf";
-        logger.info("=== CONFIG: Buscando archivos PDF en: {}", pattern);
+        log.info("=== CONFIG: Buscando archivos PDF en: {}", pattern);
         
         Resource[] resources = new PathMatchingResourcePatternResolver().getResources(pattern);
-        logger.info("=== CONFIG: Archivos PDF encontrados: {}", resources.length);
+        log.info("=== CONFIG: Archivos PDF encontrados: {}", resources.length);
         
         for (Resource resource : resources) {
-            logger.info("=== CONFIG: Archivo encontrado: {}", resource.getFile().getAbsolutePath());
+            log.info("=== CONFIG: Archivo encontrado: {}", resource.getFile().getAbsolutePath());
         }
         
         return new MultiResourceItemReaderBuilder<OperacionDocumento>()

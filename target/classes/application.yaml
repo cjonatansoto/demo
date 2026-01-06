@@ -18,6 +18,7 @@ spring:
       initialize-schema: always
     job:
       enabled: false
+      
   jpa:
     hibernate:
       ddl-auto: update
@@ -26,6 +27,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
+        
   threads:
     virtual:
       enabled: true
@@ -44,4 +46,9 @@ path:
 
 api:
   endpoint:
-    url: http://localhost:8080/api/documentos
+    base-url: https://dss-peb-gateway.hcloud.cl.bsch/chl-aleasin-apleasing/v1/operations
+  document:
+    class: DOCUMENT_CLASS
+    type: DOCUMENT_TYPE
+    client-id: CLIENT_ID
+    document-server: DOCUMENT_SERVER

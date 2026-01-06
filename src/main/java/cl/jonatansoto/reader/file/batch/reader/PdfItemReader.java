@@ -1,33 +1,32 @@
 package cl.jonatansoto.reader.file.batch.reader;
 
 import cl.jonatansoto.reader.file.model.OperacionDocumento;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.file.ResourceAwareItemReaderItemStream;
 import org.springframework.core.io.Resource;
 import java.nio.file.Files;
 
+@Slf4j
 public class PdfItemReader implements ResourceAwareItemReaderItemStream<OperacionDocumento> {
     
-    private static final Logger logger = LoggerFactory.getLogger(PdfItemReader.class);
     private Resource resource;
 
     @Override
     public OperacionDocumento read() throws Exception {
         if (resource == null) {
-            logger.debug("READER: Recurso nulo, finalizando lectura");
+            log.debug("READER: Recurso nulo, finalizando lectura");
             return null;
         }
         
         if (!resource.exists()) {
-            logger.warn("READER: Recurso no existe: {}", resource.getFile().getAbsolutePath());
+            log.warn("READER: Recurso no existe: {}", resource.getFile().getAbsolutePath());
             this.resource = null;
             return null;
         }
 
         String absolutePath = resource.getFile().getAbsolutePath();
-        logger.info("READER: Leyendo archivo: {}", absolutePath);
+        log.info("READER: Leyendo archivo: {}", absolutePath);
         
         // Extraer el número de operación que es el nombre de la carpeta (ej: .../dat/615731/1/ejemplo.pdf -> extrae 615731)
         String[] parts = absolutePath.split("/");
@@ -42,16 +41,16 @@ public class PdfItemReader implements ResourceAwareItemReaderItemStream<Operacio
         }
         
         if (nroOperacion == null || nroOperacion.isEmpty()) {
-            logger.error("READER: No se puede extraer número de operación de la ruta: {}", absolutePath);
+            log.error("READER: No se puede extraer número de operación de la ruta: {}", absolutePath);
             this.resource = null;
             return null;
         }
         
-        logger.info("READER: Número de operación extraído: {}", nroOperacion);
+        log.info("READER: Número de operación extraído: {}", nroOperacion);
 
         byte[] content = Files.readAllBytes(resource.getFile().toPath());
         long tamañoArchivo = content.length;
-        logger.info("READER: ✓ Archivo leído exitosamente - Operación: {}, Archivo: {}, Tamaño: {} bytes", 
+        log.info("READER: ✓ Archivo leído exitosamente - Operación: {}, Archivo: {}, Tamaño: {} bytes", 
                 nroOperacion, resource.getFilename(), tamañoArchivo);
 
         OperacionDocumento doc = new OperacionDocumento(nroOperacion, resource.getFilename(), content, absolutePath);
@@ -66,18 +65,25 @@ public class PdfItemReader implements ResourceAwareItemReaderItemStream<Operacio
         this.resource = resource;
         if (resource != null) {
             try {
-                logger.debug("READER: Recurso asignado: {}", resource.getFile().getAbsolutePath());
+                log.debug("READER: Recurso asignado: {}", resource.getFile().getAbsolutePath());
             } catch (Exception e) {
-                logger.debug("READER: Recurso asignado (no se pudo obtener path): {}", resource);
+                log.debug("READER: Recurso asignado (no se pudo obtener path): {}", resource);
             }
         }
     }
 
-    @Override public void open(ExecutionContext executionContext) {
-        logger.info("READER: Abriendo reader");
+    @Override 
+    public void open(ExecutionContext executionContext) {
+        log.info("READER: Abriendo reader");
     }
-    @Override public void update(ExecutionContext executionContext) {}
-    @Override public void close() {
-        logger.info("READER: Cerrando reader");
+    
+    @Override 
+    public void update(ExecutionContext executionContext) {
+        // No se requiere implementación
+    }
+    
+    @Override 
+    public void close() {
+        log.info("READER: Cerrando reader");
     }
 }

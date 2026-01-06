@@ -182,18 +182,18 @@
 
         <!-- Logs de Ejecución -->
         <div class="glass-effect rounded-2xl overflow-hidden mb-6">
-            <div class="p-6 border-b border-white/10">
+            <div class="p-6 border-b border-white/10 flex justify-between items-center">
                 <h2 class="text-2xl font-bold text-white flex items-center space-x-2">
                     <i class="bi bi-journal-text text-red-400"></i>
                     <span>Logs de Ejecución</span>
                 </h2>
+                <div class="flex items-center space-x-2">
+                    <span id="logStatus" class="text-xs text-gray-400">Conectando...</span>
+                    <div id="logIndicator" class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                </div>
             </div>
             <div class="p-6">
-                <div th:if="${logs == null || logs.isEmpty()}" class="text-center py-12">
-                    <p class="text-gray-400">No hay logs disponibles</p>
-                </div>
-
-                <div th:if="${logs != null && !logs.isEmpty()}" class="overflow-x-auto">
+                <div id="logsContainer" class="overflow-x-auto">
                     <div class="max-h-96 overflow-y-auto">
                         <table class="w-full">
                             <thead class="sticky top-0 bg-black/80 backdrop-blur-sm">
@@ -204,7 +204,7 @@
                                     <th class="text-left py-3 px-4 text-sm font-semibold text-gray-400">Mensaje</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="logsTableBody">
                                 <tr th:each="log : ${logs}" class="border-b border-white/5 hover:bg-white/5 transition-colors">
                                     <td class="py-3 px-4 text-gray-400 text-xs font-mono" 
                                         th:text="${log.fecha != null ? #temporals.format(log.fecha, 'yyyy-MM-dd HH:mm:ss') : 'N/A'}"></td>
@@ -305,5 +305,85 @@
             </div>
         </div>
     </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script>
+        const jobExecutionId = /*[[${jobExecution.id}]]*/ null;
+        let stompClient = null;
+        
+        function connectWebSocket() {
+            const socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+            
+            stompClient.connect({}, function(frame) {
+                console.log('Conectado: ' + frame);
+                document.getElementById('logStatus').textContent = 'Conectado';
+                document.getElementById('logIndicator').className = 'w-2 h-2 bg-green-400 rounded-full';
+                
+                // Suscribirse a logs generales
+                stompClient.subscribe('/topic/logs', function(message) {
+                    const logEntry = JSON.parse(message.body);
+                    if (logEntry.jobExecutionId === jobExecutionId) {
+                        addLogEntry(logEntry);
+                    }
+                });
+                
+                // Suscribirse a logs específicos del job
+                if (jobExecutionId) {
+                    stompClient.subscribe('/topic/logs/' + jobExecutionId, function(message) {
+                        const logEntry = JSON.parse(message.body);
+                        addLogEntry(logEntry);
+                    });
+                }
+            }, function(error) {
+                console.error('Error de conexión:', error);
+                document.getElementById('logStatus').textContent = 'Desconectado';
+                document.getElementById('logIndicator').className = 'w-2 h-2 bg-red-400 rounded-full';
+                setTimeout(connectWebSocket, 5000); // Reintentar en 5 segundos
+            });
+        }
+        
+        function addLogEntry(logEntry) {
+            const tbody = document.getElementById('logsTableBody');
+            const row = document.createElement('tr');
+            row.className = 'border-b border-white/5 hover:bg-white/5 transition-colors';
+            
+            const nivelClass = {
+                'INFO': 'bg-blue-500/20 text-blue-400',
+                'ERROR': 'bg-red-500/20 text-red-400',
+                'WARN': 'bg-yellow-500/20 text-yellow-400'
+            }[logEntry.nivel] || 'bg-gray-500/20 text-gray-400';
+            
+            row.innerHTML = `
+                <td class="py-3 px-4 text-gray-400 text-xs font-mono">${logEntry.fecha || 'N/A'}</td>
+                <td class="py-3 px-4">
+                    <span class="px-2 py-1 rounded text-xs font-medium ${nivelClass}">${logEntry.nivel}</span>
+                </td>
+                <td class="py-3 px-4">
+                    <code class="text-xs text-red-300 bg-red-500/20 px-2 py-1 rounded">${logEntry.componente}</code>
+                </td>
+                <td class="py-3 px-4 text-gray-300 text-sm">${logEntry.mensaje}</td>
+            `;
+            
+            tbody.appendChild(row);
+            
+            // Auto-scroll al final
+            const container = tbody.parentElement.parentElement;
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        // Conectar cuando se carga la página
+        if (jobExecutionId) {
+            connectWebSocket();
+        }
+        
+        // Desconectar cuando se cierra la página
+        window.addEventListener('beforeunload', function() {
+            if (stompClient) {
+                stompClient.disconnect();
+            }
+        });
+    </script>
 </body>
 </html>

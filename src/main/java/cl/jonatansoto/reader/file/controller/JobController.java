@@ -2,13 +2,15 @@ package cl.jonatansoto.reader.file.controller;
 
 import cl.jonatansoto.reader.file.model.DocumentoProcesado;
 import cl.jonatansoto.reader.file.repository.DocumentoProcesadoRepository;
+import cl.jonatansoto.reader.file.service.TokenService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.*;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,21 +21,22 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.*;
 
+@Slf4j
 @Controller
+@RequiredArgsConstructor
 public class JobController {
 
-    @Autowired
-    private JobLauncher jobLauncher;
-
-    @Autowired
+    private final JobLauncher jobLauncher;
+    
+    private final JobExplorer jobExplorer;
+    
+    private final DocumentoProcesadoRepository documentoProcesadoRepository;
+    
+    private final TokenService tokenService;
+    
+    @org.springframework.beans.factory.annotation.Autowired
     @Qualifier("procesarDocumentosJob")
     private Job procesarDocumentosJob;
-
-    @Autowired
-    private JobExplorer jobExplorer;
-    
-    @Autowired
-    private DocumentoProcesadoRepository documentoProcesadoRepository;
 
     @GetMapping("/")
     public String index(Model model) {
@@ -164,8 +167,15 @@ public class JobController {
                 return "redirect:/";
             }
             
-            // Token mockeado - acepta cualquier token
-            // El endpoint también está mockeado
+            // Validar token antes de iniciar el job
+            if (!tokenService.isValidJWT(token)) {
+                redirectAttributes.addFlashAttribute("error", 
+                        "Token JWT inválido, corrupto o expirado.");
+                return "redirect:/";
+            }
+            
+            // Obtener mensaje de expiración
+            String expirationMessage = tokenService.getExpirationMessage(token);
             
             JobParameters jobParameters = new JobParametersBuilder()
                     .addLong("time", System.currentTimeMillis())
@@ -177,17 +187,21 @@ public class JobController {
             // El job se ejecuta de forma asíncrona, pero podemos verificar que se inició
             redirectAttributes.addFlashAttribute("message", 
                     "Job iniciado correctamente. Execution ID: " + jobExecution.getId() + 
-                    ". El procesamiento está en curso.");
+                    ". " + expirationMessage);
         } catch (JobExecutionAlreadyRunningException e) {
+            log.error("Error: El job ya se está ejecutando", e);
             redirectAttributes.addFlashAttribute("error", 
                     "El job ya se está ejecutando");
         } catch (JobRestartException e) {
+            log.error("Error al reiniciar el job", e);
             redirectAttributes.addFlashAttribute("error", 
                     "Error al reiniciar el job: " + e.getMessage());
         } catch (JobInstanceAlreadyCompleteException e) {
+            log.error("Error: El job ya se completó anteriormente", e);
             redirectAttributes.addFlashAttribute("error", 
                     "El job ya se completó anteriormente");
         } catch (Exception e) {
+            log.error("Error al iniciar el job", e);
             redirectAttributes.addFlashAttribute("error", 
                     "Error al iniciar el job: " + e.getMessage());
         }
@@ -204,14 +218,30 @@ public class JobController {
                 return "redirect:/";
             }
             
-            // Eliminar documentos relacionados
+            // Verificar que el job no esté en ejecución
+            if (jobExecution.getStatus().isRunning()) {
+                redirectAttributes.addFlashAttribute("error", 
+                        "No se puede eliminar un job que está en ejecución. ID: " + executionId);
+                return "redirect:/";
+            }
+            
+            // Eliminar documentos relacionados primero
             List<DocumentoProcesado> documentos = documentoProcesadoRepository.findByJobExecutionId(executionId);
-            documentoProcesadoRepository.deleteAll(documentos);
+            if (!documentos.isEmpty()) {
+                documentoProcesadoRepository.deleteAll(documentos);
+                log.info("Eliminados {} documentos relacionados al job execution ID: {}", documentos.size(), executionId);
+            }
+            
+            // Nota: Spring Batch no permite eliminar JobExecutions directamente desde la API
+            // Los JobExecutions se mantienen en la base de datos para auditoría
+            // Solo podemos eliminar los documentos relacionados
             
             redirectAttributes.addFlashAttribute("message", 
-                    "Job y documentos relacionados eliminados correctamente. ID: " + executionId + 
-                    " (Se eliminaron " + documentos.size() + " documentos)");
+                    "Documentos relacionados eliminados correctamente. ID: " + executionId + 
+                    " (Se eliminaron " + documentos.size() + " documentos). " +
+                    "Nota: El registro del job se mantiene para auditoría.");
         } catch (Exception e) {
+            log.error("Error al eliminar el job execution ID: {}", executionId, e);
             redirectAttributes.addFlashAttribute("error", 
                     "Error al eliminar el job: " + e.getMessage());
         }
