@@ -46,7 +46,7 @@ path:
 
 api:
   endpoint:
-    base-url: https://dss-peb-gateway.hcloud.cl.bsch/chl-aleasin-apleasing/v1/operations
+    base-url: API_BASE
   document:
     class: DOCUMENT_CLASS
     type: DOCUMENT_TYPE
